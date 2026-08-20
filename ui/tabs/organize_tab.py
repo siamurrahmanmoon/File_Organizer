@@ -86,6 +86,14 @@ class OrganizeTab(ttk.Frame):
         )
         self.archive_selector.grid(row=2, column=0, sticky=(tk.W, tk.E), pady=4)
 
+        self.quarantine_selector = PathSelector(
+            path_frame,
+            label_text="Quarantine Directory: ",
+            default_path="",
+            on_change=lambda path: None,
+        )
+        self.quarantine_selector.grid(row=3, column=0, sticky=(tk.W, tk.E), pady=4)
+
     def _build_options_section(self):
         opts_frame = ttk.LabelFrame(
             self, text="⚙️ Quick Options & Metadata", padding="12"

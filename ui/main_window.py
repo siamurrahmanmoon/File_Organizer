@@ -112,6 +112,9 @@ class AnimeOrganizerGUI:
         self.config.flatten_output_structure = self.organize_tab.flatten_output_var.get()
         self.config.archive_source_files = self.organize_tab.archive_source_var.get()
         self.config.archive_path = self.organize_tab.archive_selector.get()
+        quarantine_path = self.organize_tab.quarantine_selector.get()
+        if quarantine_path:
+            self.config.quarantine_path = quarantine_path
         self.config.ask_user_input = self.organize_tab.ask_user_var.get()
 
         # Metadata
@@ -160,6 +163,8 @@ class AnimeOrganizerGUI:
         self.organize_tab.archive_source_var.set(getattr(preset, 'archive_source_files', False))
         if getattr(preset, 'archive_path', ''):
             self.organize_tab.archive_selector.set(preset.archive_path)
+        if getattr(preset, 'quarantine_path', ''):
+            self.organize_tab.quarantine_selector.set(preset.quarantine_path)
         self.organize_tab.ask_user_var.set(preset.ask_user_input)
 
         self.organize_tab.inc_res_var.set(preset.include_resolution)
