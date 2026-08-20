@@ -17,7 +17,7 @@
     "enable_watch_folder": false,
     "enable_notifications": true,
     "enable_analytics": true,
-    "naming_template": "{Title} ({Year}) [{Resolution}] - S{Season}E{Episode}",
+    "naming_template": "{Title} ({Year}) [{Languages}] [{Resolution}] - S{Season}E{Episode}",
     "include_resolution": true,
     "include_video_codec": false,
     "include_audio_codec": false,

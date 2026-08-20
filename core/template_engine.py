@@ -25,6 +25,7 @@ class TemplateEngine:
         "AudioCodec",
         "AudioChannels",
         "AudioLang",
+        "Languages",
         "Group",
         "ReleaseGroup",
         "Bitrate",
@@ -40,7 +41,7 @@ class TemplateEngine:
         template: str,
         context: Dict[str, Any],
         extension: str = "",
-        sanitize: bool = True
+        sanitize: bool = True,
     ) -> str:
         """
         Renders a template string using context dictionary.
@@ -63,7 +64,9 @@ class TemplateEngine:
             ctx["Type"] = ctx["MediaType"]
         if "AudioLanguages" in ctx and "AudioLang" not in ctx:
             langs = ctx["AudioLanguages"]
-            ctx["AudioLang"] = "-".join(langs) if isinstance(langs, list) else str(langs)
+            ctx["AudioLang"] = (
+                "-".join(langs) if isinstance(langs, list) else str(langs)
+            )
         if isinstance(ctx.get("Languages"), list):
             ctx["Languages"] = ", ".join(ctx["Languages"])
 
@@ -127,11 +130,17 @@ class TemplateEngine:
         open_braces = template.count("{")
         close_braces = template.count("}")
         if open_braces != close_braces:
-            return False, f"Mismatched braces: {open_braces} open vs {close_braces} close."
+            return (
+                False,
+                f"Mismatched braces: {open_braces} open vs {close_braces} close.",
+            )
 
         found_tokens = re.findall(r"\{([a-zA-Z0-9_]+)(?::[^}]+)?\}", template)
         for token in found_tokens:
             if token not in TemplateEngine.AVAILABLE_TOKENS:
-                return False, f"Unknown token: {{{token}}}. Available tokens: {', '.join(TemplateEngine.AVAILABLE_TOKENS)}"
+                return (
+                    False,
+                    f"Unknown token: {{{token}}}. Available tokens: {', '.join(TemplateEngine.AVAILABLE_TOKENS)}",
+                )
 
         return True, "Template syntax is valid."

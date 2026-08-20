@@ -14,7 +14,7 @@
     "enable_rollback": true,
     "enable_quality_control": false,
     "enable_subtitles": true,
-    "naming_template": "{Title} ({Year}) - E{Episode}",
+    "naming_template": "{Title} ({Year}) [{Languages}] - E{Episode}",
     "include_resolution": false,
     "include_video_codec": false,
     "include_audio_codec": false,

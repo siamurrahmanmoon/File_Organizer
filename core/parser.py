@@ -7,33 +7,65 @@ import difflib
 from pathlib import Path
 from typing import Dict, Any, Optional, Tuple, List
 
-
 # Known release groups or regex match for leading bracketed tag
 KNOWN_GROUPS = {
-    "subsplease", "erai-raws", "horriblesubs", "judas", "asw", "ember",
-    "yameii", "commie", "coalgirls", "golumpa", "doki", "anime-time",
-    "kaylith", "cleo", "davinci", "kametsu", "scy", "smokin", "nep",
-    "tactical", "neo", "gjm", "lostyears", "chibiki", "beetle", "vcb-studio",
-    "chyu", "reinforce", "beatrice-raws", "moozzi2", "showtime"
+    "subsplease",
+    "erai-raws",
+    "horriblesubs",
+    "judas",
+    "asw",
+    "ember",
+    "yameii",
+    "commie",
+    "coalgirls",
+    "golumpa",
+    "doki",
+    "anime-time",
+    "kaylith",
+    "cleo",
+    "davinci",
+    "kametsu",
+    "scy",
+    "smokin",
+    "nep",
+    "tactical",
+    "neo",
+    "gjm",
+    "lostyears",
+    "chibiki",
+    "beetle",
+    "vcb-studio",
+    "chyu",
+    "reinforce",
+    "beatrice-raws",
+    "moozzi2",
+    "showtime",
 }
 
 YEAR_REGEX = re.compile(r"\b(19|20)\d{2}\b")
 CRC32_REGEX = re.compile(r"\[[0-9A-Fa-f]{8}\]")
-RESOLUTION_REGEX = re.compile(r"\b(2160p|1440p|1080p|720p|480p|360p|4K|2K|FHD|HD)\b", re.IGNORECASE)
+RESOLUTION_REGEX = re.compile(
+    r"\b(2160p|1440p|1080p|720p|480p|360p|4K|2K|FHD|HD)\b", re.IGNORECASE
+)
 CODEC_REGEX = re.compile(
-    r"\b(x264|x265|h264|h265|hevc|av1|vp9|xvid|divx|10bit|8bit|hi10p|hdr|sdr)\b", re.IGNORECASE
+    r"\b(x264|x265|h264|h265|hevc|av1|vp9|xvid|divx|10bit|8bit|hi10p|hdr|sdr)\b",
+    re.IGNORECASE,
 )
 AUDIO_REGEX = re.compile(
-    r"\b(AAC|FLAC|AC3|EAC3|DTS|DTS-HD|TrueHD|Opus|MP3|Dual[- ]Audio|Multi[- ]Audio)\b", re.IGNORECASE
+    r"\b(AAC|FLAC|AC3|EAC3|DTS|DTS-HD|TrueHD|Opus|MP3|Dual[- ]Audio|Multi[- ]Audio)\b",
+    re.IGNORECASE,
 )
 LANGUAGE_REGEX = re.compile(
-    r"\b(Hindi|English|Japanese|Jap|Eng|Hin|Bengali|Bangli|Bangla|Tamil|Telugu|Korean|Chinese|Dual|Multi)\b", re.IGNORECASE
+    r"\b(Hindi|English|Japanese|Jap|Eng|Hin|Bengali|Bangli|Bangla|Tamil|Telugu|Korean|Chinese|Dual|Multi)\b",
+    re.IGNORECASE,
 )
 WEB_DOMAINS_REGEX = re.compile(
-    r"\b[a-zA-Z0-9_\-]+\.(?:to|com|org|net|xyz|is|in|me|tv|cc|cx|club|vip|site|online)\b", re.IGNORECASE
+    r"\b[a-zA-Z0-9_\-]+\.(?:to|com|org|net|xyz|is|in|me|tv|cc|cx|club|vip|site|online)\b",
+    re.IGNORECASE,
 )
 JUNK_TAGS_REGEX = re.compile(
-    r"\b(Series|Complete|Full|Batch|Season\s*\d+|Episode\s*\d+|HD|FHD|UHD|4K|WEB-DL|WEBRip|BluRay|BRRip|BDRip|DVDRip|HDRip|REPACK|PROPER|REMUX)\b", re.IGNORECASE
+    r"\b(Series|Complete|Full|Batch|Season\s*\d+|Episode\s*\d+|HD|FHD|UHD|4K|WEB-DL|WEBRip|BluRay|BRRip|BDRip|DVDRip|HDRip|REPACK|PROPER|REMUX)\b",
+    re.IGNORECASE,
 )
 
 
@@ -74,7 +106,9 @@ class SmartMediaParser:
         if group_match:
             candidate = group_match.group(1).strip()
             # If not a resolution or codec
-            if not RESOLUTION_REGEX.fullmatch(candidate) and not CRC32_REGEX.fullmatch(f"[{candidate}]"):
+            if not RESOLUTION_REGEX.fullmatch(candidate) and not CRC32_REGEX.fullmatch(
+                f"[{candidate}]"
+            ):
                 info["ReleaseGroup"] = candidate
 
         # 3. Detect Media Type (Movie, OVA, Special, etc.)
@@ -162,7 +196,11 @@ class SmartMediaParser:
         episode_range = ""
 
         # Pattern 1: S01E01-E04 or S01E01-04 or S01E01 - E02
-        s_range_m = re.search(r"S(\d{1,2})\s*E(\d{1,3})\s*-\s*(?:E)?(\d{1,3})(?![pPkK\d])", text, re.IGNORECASE)
+        s_range_m = re.search(
+            r"S(\d{1,2})\s*E(\d{1,3})\s*-\s*(?:E)?(\d{1,3})(?![pPkK\d])",
+            text,
+            re.IGNORECASE,
+        )
         if s_range_m:
             ep_start = int(s_range_m.group(2))
             ep_end = int(s_range_m.group(3))
@@ -216,14 +254,18 @@ class SmartMediaParser:
         return season, episode, ""
 
     @staticmethod
-    def clean_title(raw_title: str, parsed_info: Optional[Dict[str, Any]] = None) -> str:
+    def clean_title(
+        raw_title: str, parsed_info: Optional[Dict[str, Any]] = None
+    ) -> str:
         """Strips tags, release group brackets, resolutions, and noise from anime title."""
         title = raw_title
 
         # Remove release group if present at start
         if parsed_info and parsed_info.get("ReleaseGroup"):
             group = parsed_info["ReleaseGroup"]
-            title = re.sub(rf"^\[{re.escape(group)}\]\s*", "", title, flags=re.IGNORECASE)
+            title = re.sub(
+                rf"^\[{re.escape(group)}\]\s*", "", title, flags=re.IGNORECASE
+            )
 
         # Remove bracketed tags like [1080p] [x265] [Dual-Audio] [8A7B6C]
         title = CRC32_REGEX.sub("", title)
@@ -237,11 +279,21 @@ class SmartMediaParser:
         title = RESOLUTION_REGEX.sub("", title)
         title = CODEC_REGEX.sub("", title)
         title = AUDIO_REGEX.sub("", title)
+        title = LANGUAGE_REGEX.sub("", title)
+        title = JUNK_TAGS_REGEX.sub("", title)
+        title = WEB_DOMAINS_REGEX.sub("", title)
 
         # Remove S01E01 patterns from title
-        title = re.sub(r"S\d{1,2}\s*(?:E|EP)?\d{1,4}(?:\s*-\s*(?:E)?\d{1,4})?", "", title, flags=re.IGNORECASE)
-        title = re.sub(r"\b(?:Episode|Ep|E)\s*\d{1,4}\b", "", title, flags=re.IGNORECASE)
-        title = re.sub(r"\bSeason\s*\d{1,2}\b", "", title, flags=re.IGNORECASE)
+        title = re.sub(
+            r"S\d{1,2}\s*(?:E|EP)?\d{1,4}(?:\s*-\s*(?:E)?\d{1,4})?",
+            "",
+            title,
+            flags=re.IGNORECASE,
+        )
+        title = re.sub(
+            r"\b(?:Episode|Ep|E)\s*\d{1,4}\b", "", title, flags=re.IGNORECASE
+        )
+        title = re.sub(r"\bSeason[\s._-]*\d{1,2}\b", "", title, flags=re.IGNORECASE)
         title = re.sub(r"-\s*\d{1,4}\s*$", "", title)
 
         # Clean noise characters

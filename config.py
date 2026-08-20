@@ -15,23 +15,30 @@ import os
 # ==============================================================================
 # Set any of these to True/False to enable or disable features globally.
 
-ENABLE_METADATA_EXTRACTION: bool = True     # 1. Video metadata extraction via FFprobe
-ENABLE_AI_PATTERN_PARSER: bool = True       # 2. Pattern recognition (groups, seasons, OVAs, etc.)
-ENABLE_DUPLICATE_DETECTION: bool = True     # 3. Duplicate detection (hashing, size, similarity)
-ENABLE_ADVANCED_FILTERS: bool = True        # 4. Multi-criteria filtering (size, res, codec, etc.)
-ENABLE_CUSTOM_TEMPLATES: bool = True        # 5. User-defined naming templates
-ENABLE_ROLLBACK_JOURNAL: bool = True        # 6. SQLite operation journal & 1-click Undo
-ENABLE_QUALITY_CONTROL: bool = True         # 7. File corruption & incomplete download checks
-ENABLE_SUBTITLE_MANAGEMENT: bool = True     # 8. Sidecar subtitle pairing (.srt, .ass)
-ENABLE_AUTOMATION_WATCH: bool = True        # 9. Watch folder & scheduled auto-organizer
-ENABLE_NOTIFICATIONS: bool = True           # 10. Desktop alerts & Discord/Telegram webhooks
-ENABLE_ANALYTICS: bool = True               # 11. Statistics tracking & CSV/JSON/HTML export
-ENABLE_SECURITY_VALIDATION: bool = True     # 12. Path traversal & reserved name protection
+ENABLE_METADATA_EXTRACTION: bool = True  # 1. Video metadata extraction via FFprobe
+ENABLE_AI_PATTERN_PARSER: bool = (
+    True  # 2. Pattern recognition (groups, seasons, OVAs, etc.)
+)
+ENABLE_DUPLICATE_DETECTION: bool = (
+    True  # 3. Duplicate detection (hashing, size, similarity)
+)
+ENABLE_ADVANCED_FILTERS: bool = (
+    True  # 4. Multi-criteria filtering (size, res, codec, etc.)
+)
+ENABLE_CUSTOM_TEMPLATES: bool = True  # 5. User-defined naming templates
+ENABLE_ROLLBACK_JOURNAL: bool = True  # 6. SQLite operation journal & 1-click Undo
+ENABLE_QUALITY_CONTROL: bool = True  # 7. File corruption & incomplete download checks
+ENABLE_SUBTITLE_MANAGEMENT: bool = True  # 8. Sidecar subtitle pairing (.srt, .ass)
+ENABLE_AUTOMATION_WATCH: bool = True  # 9. Watch folder & scheduled auto-organizer
+ENABLE_NOTIFICATIONS: bool = True  # 10. Desktop alerts & Discord/Telegram webhooks
+ENABLE_ANALYTICS: bool = True  # 11. Statistics tracking & CSV/JSON/HTML export
+ENABLE_SECURITY_VALIDATION: bool = True  # 12. Path traversal & reserved name protection
 
 
 # ==============================================================================
 # ⚙️ CONFIGURATION DATA MODEL
 # ==============================================================================
+
 
 @dataclass
 class OrganizerConfig:
@@ -51,8 +58,8 @@ class OrganizerConfig:
     auto_folder_year: bool = True
     skip_existing_year: bool = True
     ask_user_input: bool = False
-    safe_mode: bool = True                      # Overwrite protection with safe auto-increment
-    move_files: bool = True                     # True = Move, False = Copy
+    safe_mode: bool = True  # Overwrite protection with safe auto-increment
+    move_files: bool = True  # True = Move, False = Copy
 
     # Feature Switches (per-run overrides of global switches)
     enable_metadata: bool = ENABLE_METADATA_EXTRACTION
@@ -68,19 +75,34 @@ class OrganizerConfig:
     enable_analytics: bool = ENABLE_ANALYTICS
 
     # File Extensions
-    video_extensions: Set[str] = field(default_factory=lambda: {
-        ".mp4", ".mkv", ".avi", ".mov", ".wmv", ".flv", ".webm",
-        ".m4v", ".mpeg", ".mpg", ".ts", ".m2ts", ".iso"
-    })
-    subtitle_extensions: Set[str] = field(default_factory=lambda: {
-        ".srt", ".ass", ".ssa", ".vtt", ".sub", ".idx"
-    })
+    video_extensions: Set[str] = field(
+        default_factory=lambda: {
+            ".mp4",
+            ".mkv",
+            ".avi",
+            ".mov",
+            ".wmv",
+            ".flv",
+            ".webm",
+            ".m4v",
+            ".mpeg",
+            ".mpg",
+            ".ts",
+            ".m2ts",
+            ".iso",
+        }
+    )
+    subtitle_extensions: Set[str] = field(
+        default_factory=lambda: {".srt", ".ass", ".ssa", ".vtt", ".sub", ".idx"}
+    )
     custom_extensions: str = ""
 
     # Naming Template Settings
     # Available tokens: {Title}, {Year}, {Season}, {Episode}, {Resolution}, {Codec},
     #                   {AudioCodec}, {AudioChannels}, {AudioLang}, {Group}, {Bitrate}, {FPS}, {Type}
-    naming_template: str = "{Title} ({Year}) [{Languages}] [{Resolution}] - S{Season}E{Episode}"
+    naming_template: str = (
+        "{Title} ({Year}) [{Languages}] [{Resolution}] - S{Season}E{Episode}"
+    )
     clean_title_replace_spaces: bool = True
     remove_bracketed_tags: bool = True
 
@@ -94,24 +116,30 @@ class OrganizerConfig:
     include_fps: bool = False
 
     # Duplicate Handling Options
-    duplicate_action: str = "quarantine"        # Options: 'quarantine', 'skip', 'overwrite_if_better', 'tag'
-    hash_algorithm: str = "fast"                # Options: 'fast' (chunks), 'sha256', 'md5'
+    duplicate_action: str = (
+        "quarantine"  # Options: 'quarantine', 'skip', 'overwrite_if_better', 'tag'
+    )
+    hash_algorithm: str = "fast"  # Options: 'fast' (chunks), 'sha256', 'md5'
     duplicate_similarity_threshold: float = 0.85
 
     # Advanced Filters
-    min_file_size_mb: float = 0.0               # 0 = no minimum
-    max_file_size_mb: float = 0.0               # 0 = no maximum
-    resolution_whitelist: List[str] = field(default_factory=list) # e.g. ["1080p", "4K"]
-    codec_whitelist: List[str] = field(default_factory=list)      # e.g. ["x265", "HEVC"]
-    release_group_filter: str = ""             # Regex or comma-separated
-    language_filter: List[str] = field(default_factory=list)      # e.g. ["Japanese", "English", "Hindi"]
+    min_file_size_mb: float = 0.0  # 0 = no minimum
+    max_file_size_mb: float = 0.0  # 0 = no maximum
+    resolution_whitelist: List[str] = field(
+        default_factory=list
+    )  # e.g. ["1080p", "4K"]
+    codec_whitelist: List[str] = field(default_factory=list)  # e.g. ["x265", "HEVC"]
+    release_group_filter: str = ""  # Regex or comma-separated
+    language_filter: List[str] = field(
+        default_factory=list
+    )  # e.g. ["Japanese", "English", "Hindi"]
     min_year: int = 1900
     max_year: int = 2099
     custom_regex_filter: str = ""
 
     # Quality Control
     skip_corrupt_files: bool = True
-    skip_incomplete_downloads: bool = True      # .part, .crdownload, !qB
+    skip_incomplete_downloads: bool = True  # .part, .crdownload, !qB
 
     # Watch Folder & Scheduler
     watch_interval_seconds: int = 60
@@ -139,7 +167,9 @@ class OrganizerConfig:
         cfg = cls()
         for k, v in data.items():
             if hasattr(cfg, k):
-                if k in ("video_extensions", "subtitle_extensions") and isinstance(v, list):
+                if k in ("video_extensions", "subtitle_extensions") and isinstance(
+                    v, list
+                ):
                     setattr(cfg, k, set(v))
                 else:
                     setattr(cfg, k, v)
@@ -165,11 +195,11 @@ class OrganizerConfig:
 # ==============================================================================
 DEFAULT_TEMPLATES = {
     "Standard": "{Title} ({Year}) [{Languages}] [{Resolution}] - S{Season}E{Episode}",
-    "Scene / Anime Release": "[{Group}] {Title} - {Episode} [{Resolution}] [{Codec}]",
-    "Plex / Jellyfin": "{Title} ({Year})/Season {Season:02d}/{Title} - S{Season:02d}E{Episode:02d}",
-    "Archival Full Info": "{Title} ({Year}) [{Resolution}] [{Codec}] [{AudioCodec} {AudioChannels}] - S{Season}E{Episode}",
-    "Compact Title Only": "{Title} ({Year}) - E{Episode}",
-    "Movie / Feature": "{Title} ({Year}) [{Resolution}] [{Codec}]"
+    "Scene / Anime Release": "[{Group}] {Title} ({Year}) [{Languages}] - {Episode} [{Resolution}] [{Codec}]",
+    "Plex / Jellyfin": "{Title} ({Year})/Season {Season:02d}/{Title} [{Languages}] - S{Season:02d}E{Episode:02d}",
+    "Archival Full Info": "{Title} ({Year}) [{Languages}] [{Resolution}] [{Codec}] [{AudioCodec} {AudioChannels}] - S{Season}E{Episode}",
+    "Compact Title Only": "{Title} ({Year}) [{Languages}] - E{Episode}",
+    "Movie / Feature": "{Title} ({Year}) [{Languages}] [{Resolution}] [{Codec}]",
 }
 
 

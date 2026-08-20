@@ -14,7 +14,7 @@
     "enable_rollback": true,
     "enable_quality_control": true,
     "enable_subtitles": true,
-    "naming_template": "{Title} ({Year})/Season {Season:02d}/{Title} - S{Season:02d}E{Episode:02d}",
+    "naming_template": "{Title} ({Year})/Season {Season:02d}/{Title} [{Languages}] - S{Season:02d}E{Episode:02d}",
     "include_resolution": false,
     "include_video_codec": false,
     "include_audio_codec": false,
