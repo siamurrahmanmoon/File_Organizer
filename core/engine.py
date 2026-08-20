@@ -102,6 +102,7 @@ class AnimeFileOrganizer:
         self.processing_start_time = None
         self.skip_all_missing_years = False
         self.session_id = None
+        self.user_year_cache: Dict[Tuple[str, str], str] = {}
 
         self.year_pattern = re.compile(r"\b(19|20)\d{2}\b")
         self.video_extensions = set(self.config.video_extensions)
@@ -253,7 +254,18 @@ class AnimeFileOrganizer:
                 if self.skip_all_missing_years:
                     self.skipped_count += 1
                     return "skipped"
-                if self.gui_input_callback:
+
+                cache_key = (
+                    str(file_path.parent.resolve()).casefold(),
+                    str(parsed_info.get("Title", "")).strip().casefold(),
+                )
+                year_input = self.user_year_cache.get(cache_key)
+                if year_input:
+                    self.logger.info(
+                        f"   ✅ Using cached year ({year_input}) for "
+                        f"{parsed_info.get('Title', file_path.stem)}"
+                    )
+                elif self.gui_input_callback:
                     year_input = self.gui_input_callback(file_path.parent.name)
                 else:
                     year_input = input(f"Enter year for {file_path.name}: ")
@@ -264,6 +276,7 @@ class AnimeFileOrganizer:
                     return "skipped"
                 elif year_input and self.year_pattern.fullmatch(year_input.strip()):
                     year_to_use = year_input.strip()
+                    self.user_year_cache[cache_key] = year_to_use
                     parsed_info["Year"] = year_to_use
                     new_name = TemplateEngine.render(
                         self.config.naming_template,
@@ -298,7 +311,13 @@ class AnimeFileOrganizer:
             if is_dup:
                 self.logger.warning(f"   🔍 Duplicate detected: {current_name}")
                 self.duplicate_count += 1
-                if self.config.duplicate_action == "quarantine" and not dry_run:
+                if self.config.duplicate_action == "quarantine":
+                    if dry_run:
+                        self.logger.info(
+                            f"   🔍 [DRY RUN] Would quarantine duplicate: {current_name}"
+                        )
+                        return "duplicate"
+
                     q_dest = self.duplicate_detector.quarantine_file(file_path)
                     self.logger.info(f"   📦 Moved duplicate to quarantine: {q_dest}")
                     if self.rollback_mgr and self.session_id:

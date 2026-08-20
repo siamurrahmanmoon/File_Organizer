@@ -6,6 +6,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from pathlib import Path
 from typing import List, Dict, Any
+from core.duplicate_detector import DuplicateDetector
 
 
 class PreviewTab(ttk.Frame):
@@ -32,18 +33,22 @@ class PreviewTab(ttk.Frame):
             ctrl_frame,
             text="🔄 Scan & Generate Preview",
             style="Accent.TButton",
-            command=self.refresh_preview
+            command=self.refresh_preview,
         )
         self.refresh_btn.grid(row=0, column=0, padx=(0, 10))
 
         # Search filter
-        ttk.Label(ctrl_frame, text="🔍 Filter:", font=("Segoe UI", 9, "bold")).grid(row=0, column=1, padx=(10, 5))
+        ttk.Label(ctrl_frame, text="🔍 Filter:", font=("Segoe UI", 9, "bold")).grid(
+            row=0, column=1, padx=(10, 5)
+        )
         self.filter_var = tk.StringVar()
         self.filter_var.trace_add("write", lambda *_: self._filter_table())
         self.filter_entry = ttk.Entry(ctrl_frame, textvariable=self.filter_var)
         self.filter_entry.grid(row=0, column=2, sticky=(tk.W, tk.E), padx=(0, 10))
 
-        self.count_lbl = ttk.Label(ctrl_frame, text="0 items found", font=("Segoe UI", 9))
+        self.count_lbl = ttk.Label(
+            ctrl_frame, text="0 items found", font=("Segoe UI", 9)
+        )
         self.count_lbl.grid(row=0, column=3)
 
     def _build_table(self):
@@ -54,10 +59,7 @@ class PreviewTab(ttk.Frame):
 
         columns = ("status", "original", "renamed", "year", "resolution", "codec")
         self.tree = ttk.Treeview(
-            table_frame,
-            columns=columns,
-            show="headings",
-            selectmode="extended"
+            table_frame, columns=columns, show="headings", selectmode="extended"
         )
 
         self.tree.heading("status", text="Status")
@@ -91,21 +93,17 @@ class PreviewTab(ttk.Frame):
             bottom_frame,
             text="⚡ Apply & Rename Selected",
             style="Success.TButton",
-            command=self._apply_selected
+            command=self._apply_selected,
         )
         self.apply_selected_btn.pack(side=tk.RIGHT, padx=5)
 
         self.select_all_btn = ttk.Button(
-            bottom_frame,
-            text="Select All",
-            command=self._select_all
+            bottom_frame, text="Select All", command=self._select_all
         )
         self.select_all_btn.pack(side=tk.LEFT, padx=5)
 
         self.deselect_all_btn = ttk.Button(
-            bottom_frame,
-            text="Deselect All",
-            command=self._deselect_all
+            bottom_frame, text="Deselect All", command=self._deselect_all
         )
         self.deselect_all_btn.pack(side=tk.LEFT, padx=5)
 
@@ -113,7 +111,10 @@ class PreviewTab(ttk.Frame):
         """Scans source folder and populates the Before/After diff table."""
         source_dir = self.main_app.get_source_path()
         if not source_dir or not Path(source_dir).exists():
-            messagebox.showwarning("Warning", "Please select a valid Source directory in the Organize tab first.")
+            messagebox.showwarning(
+                "Warning",
+                "Please select a valid Source directory in the Organize tab first.",
+            )
             return
 
         self.tree.delete(*self.tree.get_children())
@@ -123,15 +124,19 @@ class PreviewTab(ttk.Frame):
         src_path = Path(source_dir)
 
         count = 0
+        seen_signatures = set()
         glob_pattern = "**/*" if organizer.config.process_subfolders else "*"
         for p in src_path.glob(glob_pattern):
             if p.is_file() and p.suffix.lower() in organizer.video_extensions:
                 plan = organizer.plan_file_rename(p)
                 info = plan["parsed_info"]
+                signature = DuplicateDetector.get_content_signature(info)
+                is_duplicate = signature in seen_signatures
+                seen_signatures.add(signature)
                 item_data = {
                     "source_path": p,
                     "target_name": plan["target_name"],
-                    "status": "Ready",
+                    "status": "⚠️ Duplicate" if is_duplicate else "Ready",
                     "original": p.name,
                     "renamed": plan["target_name"],
                     "year": info.get("Year", "-"),
@@ -157,8 +162,8 @@ class PreviewTab(ttk.Frame):
                     it["renamed"],
                     it["year"],
                     it["resolution"],
-                    it["codec"]
-                )
+                    it["codec"],
+                ),
             )
 
     def _filter_table(self):
@@ -168,7 +173,8 @@ class PreviewTab(ttk.Frame):
             return
 
         filtered = [
-            it for it in self.planned_items
+            it
+            for it in self.planned_items
             if query in it["original"].lower() or query in it["renamed"].lower()
         ]
         self._populate_table(filtered)
@@ -183,10 +189,14 @@ class PreviewTab(ttk.Frame):
     def _apply_selected(self):
         selected_ids = self.tree.selection()
         if not selected_ids:
-            messagebox.showinfo("Info", "Please select one or more files in the table to rename.")
+            messagebox.showinfo(
+                "Info", "Please select one or more files in the table to rename."
+            )
             return
 
-        if not messagebox.askyesno("Confirm", f"Rename {len(selected_ids)} selected file(s)?"):
+        if not messagebox.askyesno(
+            "Confirm", f"Rename {len(selected_ids)} selected file(s)?"
+        ):
             return
 
         organizer = self.main_app.get_organizer_instance()
@@ -198,7 +208,11 @@ class PreviewTab(ttk.Frame):
             if idx < len(self.planned_items):
                 item = self.planned_items[idx]
                 src = item["source_path"]
-                rel = src.parent.relative_to(organizer.source_path) if organizer.config.process_subfolders else Path("")
+                rel = (
+                    src.parent.relative_to(organizer.source_path)
+                    if organizer.config.process_subfolders
+                    else Path("")
+                )
                 target_folder = out_dir / rel
                 res = organizer.process_file(src, target_folder, dry_run=False)
                 if res == "success":
