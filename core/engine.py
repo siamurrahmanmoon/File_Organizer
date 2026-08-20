@@ -120,6 +120,11 @@ class AnimeFileOrganizer:
             }
 
     def contains_year(self, text: str) -> Tuple[bool, Optional[str]]:
+        # যদি ফোল্ডারের নাম শুধুই ৪ সংখ্যার বছর হয় (যেমন: "2026"), তবে সেটিকে অটো-ডিটেক্টেড বছর হিসেবে গণ্য করা হবে না।
+        # কারণ এটি সাধারণত একটি গ্রুপিং ফোল্ডার, শিরোনামের অংশ নয়। এতে ভুল বছর ডিটেক্ট হওয়া বন্ধ হবে।
+        if re.match(r"^(19|20)\d{2}$", text.strip()):
+            return False, None
+
         match = self.year_pattern.search(text)
         return (True, match.group(0)) if match else (False, None)
 
@@ -255,20 +260,33 @@ class AnimeFileOrganizer:
                     self.skipped_count += 1
                     return "skipped"
 
-                cache_key = (
-                    str(file_path.parent.resolve()).casefold(),
-                    str(parsed_info.get("Title", "")).strip().casefold(),
-                )
+                # ১. পার্স করা টাইটেল বা ফাইলের নাম থেকে বেস টাইটেল নেওয়া
+                raw_title = str(parsed_info.get("Title", file_path.stem)).strip()
+
+                # ২. টাইটেল নরমালাইজ করা (সব ছোট হাতের অক্ষর, স্পেশাল ক্যারেক্টার রিমুভ)
+                normalized_title = re.sub(r'[^a-z0-9\s]', '', raw_title.lower()).strip()
+
+                # ৩. টাইটেলের প্রথম ৪টি শব্দ নিয়ে একটি ইউনিক সিগনেচার তৈরি করা
+                title_signature = " ".join(normalized_title.split()[:4])
+
+                # ৪. ফাইনাল ক্যাশে কি: (ফোল্ডার পাথ + টাইটেল সিগনেচার)
+                cache_key = (str(file_path.parent.resolve()).casefold(), title_signature)
+
+                # ৫. ডিবাগ লগ: ক্যাশ কি দেখানো
+                self.logger.debug(f"🔑 Cache Key for '{raw_title}': {cache_key}")
+
                 year_input = self.user_year_cache.get(cache_key)
                 if year_input:
                     self.logger.info(
-                        f"   ✅ Using cached year ({year_input}) for "
+                        f" ✅ Using cached year ({year_input}) for "
                         f"{parsed_info.get('Title', file_path.stem)}"
                     )
                 elif self.gui_input_callback:
                     year_input = self.gui_input_callback(file_path.parent.name)
-                else:
-                    year_input = input(f"Enter year for {file_path.name}: ")
+                    if year_input and year_input != "skip_all":
+                        # ক্যাশে সেভ করা
+                        self.user_year_cache[cache_key] = year_input
+                        self.logger.debug(f"💾 Cached year {year_input} for key: {cache_key}")
 
                 if year_input == "skip_all":
                     self.skip_all_missing_years = True
