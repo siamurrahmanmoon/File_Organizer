@@ -109,6 +109,7 @@ class PreviewTab(ttk.Frame):
 
     def refresh_preview(self):
         """Scans source folder and populates the Before/After diff table."""
+        import os
         source_dir = self.main_app.get_source_path()
         if not source_dir or not Path(source_dir).exists():
             messagebox.showwarning(
@@ -123,39 +124,50 @@ class PreviewTab(ttk.Frame):
         organizer = self.main_app.get_organizer_instance()
         src_path = Path(source_dir)
 
+        # DEBUG: Log scan start
+        self.main_app.organize_tab.append_log(f"🔍 Preview: Starting scan of {source_dir}", "HIGHLIGHT")
+
         count = 0
         error_count = 0
+        skipped_count = 0
         seen_signatures = set()
-        glob_pattern = "**/*" if organizer.config.process_subfolders else "*"
-        for p in src_path.glob(glob_pattern):
-            if p.is_file() and p.suffix.lower() in organizer.video_extensions:
-                try:
-                    plan = organizer.plan_file_rename(p)
-                    info = plan["parsed_info"]
-                    signature = DuplicateDetector.get_content_signature(info)
-                    is_duplicate = signature in seen_signatures
-                    seen_signatures.add(signature)
-                    item_data = {
-                        "source_path": p,
-                        "target_name": plan["target_name"],
-                        "status": "⚠️ Duplicate" if is_duplicate else "Ready",
-                        "original": p.name,
-                        "renamed": plan["target_name"],
-                        "year": info.get("Year", "-"),
-                        "resolution": info.get("Resolution", "-"),
-                        "codec": info.get("VideoCodec", "-"),
-                    }
-                    self.planned_items.append(item_data)
-                    count += 1
-                except Exception as e:
-                    error_count += 1
-                    self.main_app.organize_tab.append_log(f"⚠️ Preview scan error for {p.name}: {e}", "WARNING")
+        
+        # Use os.walk() for better Windows compatibility with long paths
+        for root, dirs, files in os.walk(str(src_path)):
+            root_path = Path(root)
+            for f in files:
+                if any(f.lower().endswith(ext) for ext in organizer.video_extensions):
+                    p = root_path / f
+                    try:
+                        plan = organizer.plan_file_rename(p)
+                        info = plan["parsed_info"]
+                        signature = DuplicateDetector.get_content_signature(info)
+                        is_duplicate = signature in seen_signatures
+                        seen_signatures.add(signature)
+                        item_data = {
+                            "source_path": p,
+                            "target_name": plan["target_name"],
+                            "status": "⚠️ Duplicate" if is_duplicate else "Ready",
+                            "original": p.name,
+                            "renamed": plan["target_name"],
+                            "year": info.get("Year", "-"),
+                            "resolution": info.get("Resolution", "-"),
+                            "codec": info.get("VideoCodec", "-"),
+                        }
+                        self.planned_items.append(item_data)
+                        count += 1
+                    except Exception as e:
+                        error_count += 1
+                        self.main_app.organize_tab.append_log(f"⚠️ Preview error: {p.name}: {e}", "WARNING")
 
         self._populate_table(self.planned_items)
         status_text = f"{count} files loaded"
         if error_count > 0:
             status_text += f" ({error_count} errors)"
         self.count_lbl.config(text=status_text)
+        
+        # DEBUG: Log summary
+        self.main_app.organize_tab.append_log(f"📊 Preview scan complete: {count} files loaded, {error_count} errors", "SUCCESS")
 
     def _populate_table(self, items: List[Dict[str, Any]]):
         self.tree.delete(*self.tree.get_children())
