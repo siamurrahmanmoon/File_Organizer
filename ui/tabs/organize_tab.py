@@ -37,7 +37,7 @@ class OrganizeTab(ttk.Frame):
         title_lbl = ttk.Label(
             header_frame,
             text="🎬 Advanced File Organizer Pro",
-            font=("Segoe UI", 16, "bold")
+            font=("Segoe UI", 16, "bold"),
         )
         title_lbl.grid(row=0, column=0, sticky=tk.W)
 
@@ -45,12 +45,14 @@ class OrganizeTab(ttk.Frame):
         profile_frame = ttk.Frame(header_frame)
         profile_frame.grid(row=0, column=1, sticky=tk.E)
 
-        ttk.Label(profile_frame, text="📑 Preset Profile: ", font=("Segoe UI", 9, "bold")).pack(side=tk.LEFT)
+        ttk.Label(
+            profile_frame, text="📑 Preset Profile: ", font=("Segoe UI", 9, "bold")
+        ).pack(side=tk.LEFT)
         self.preset_combo = ttk.Combobox(
             profile_frame,
             values=["default", "plex_jellyfin", "anime_archival", "minimal_clean"],
             state="readonly",
-            width=18
+            width=18,
         )
         self.preset_combo.set("default")
         self.preset_combo.pack(side=tk.LEFT, padx=5)
@@ -65,49 +67,84 @@ class OrganizeTab(ttk.Frame):
             path_frame,
             label_text="Source Directory: ",
             default_path=r"R:\Anime1",
-            on_change=lambda path: self.main_app.on_source_change(path)
+            on_change=lambda path: self.main_app.on_source_change(path),
         )
         self.source_selector.grid(row=0, column=0, sticky=(tk.W, tk.E), pady=4)
 
         self.output_selector = PathSelector(
             path_frame,
             label_text="Output Directory: ",
-            default_path=r"R:\Anime1_Organized"
+            default_path=r"R:\Anime1_Organized",
         )
         self.output_selector.grid(row=1, column=0, sticky=(tk.W, tk.E), pady=4)
 
+        self.archive_selector = PathSelector(
+            path_frame,
+            label_text="Archive Directory: ",
+            default_path="",
+            on_change=lambda path: None,
+        )
+        self.archive_selector.grid(row=2, column=0, sticky=(tk.W, tk.E), pady=4)
+
     def _build_options_section(self):
-        opts_frame = ttk.LabelFrame(self, text="⚙️ Quick Options & Metadata", padding="12")
+        opts_frame = ttk.LabelFrame(
+            self, text="⚙️ Quick Options & Metadata", padding="12"
+        )
         opts_frame.grid(row=2, column=0, sticky=(tk.W, tk.E), pady=5)
         opts_frame.columnconfigure((0, 1, 2, 3), weight=1)
 
         self.dry_run_var = tk.BooleanVar(value=True)
-        ttk.Checkbutton(opts_frame, text="🔍 Dry Run (Simulate)", variable=self.dry_run_var).grid(row=0, column=0, sticky=tk.W, padx=5, pady=3)
+        ttk.Checkbutton(
+            opts_frame, text="🔍 Dry Run (Simulate)", variable=self.dry_run_var
+        ).grid(row=0, column=0, sticky=tk.W, padx=5, pady=3)
 
         self.auto_folder_year_var = tk.BooleanVar(value=True)
-        ttk.Checkbutton(opts_frame, text="🎯 Auto Folder Year", variable=self.auto_folder_year_var).grid(row=0, column=1, sticky=tk.W, padx=5, pady=3)
+        ttk.Checkbutton(
+            opts_frame, text="🎯 Auto Folder Year", variable=self.auto_folder_year_var
+        ).grid(row=0, column=1, sticky=tk.W, padx=5, pady=3)
 
         self.subfolders_var = tk.BooleanVar(value=True)
-        ttk.Checkbutton(opts_frame, text="📂 Recursive Subfolders", variable=self.subfolders_var).grid(row=0, column=2, sticky=tk.W, padx=5, pady=3)
+        ttk.Checkbutton(
+            opts_frame, text="📂 Recursive Subfolders", variable=self.subfolders_var
+        ).grid(row=0, column=2, sticky=tk.W, padx=5, pady=3)
 
-        self.ask_user_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(opts_frame, text="❓ Ask if Missing Year", variable=self.ask_user_var).grid(row=0, column=3, sticky=tk.W, padx=5, pady=3)
+        self.ask_user_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(
+            opts_frame, text="❓ Ask if Missing Year", variable=self.ask_user_var
+        ).grid(row=0, column=3, sticky=tk.W, padx=5, pady=3)
 
-        self.flatten_output_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(opts_frame, text="📁 Flatten Output (No Subfolders)", variable=self.flatten_output_var).grid(row=0, column=4, sticky=tk.W, padx=5, pady=3)
+        self.flatten_output_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(
+            opts_frame,
+            text="📁 Flatten Output (No Subfolders)",
+            variable=self.flatten_output_var,
+        ).grid(row=0, column=4, sticky=tk.W, padx=5, pady=3)
 
         # Metadata row
         self.inc_res_var = tk.BooleanVar(value=True)
-        ttk.Checkbutton(opts_frame, text="📺 Include Resolution", variable=self.inc_res_var).grid(row=1, column=0, sticky=tk.W, padx=5, pady=3)
+        ttk.Checkbutton(
+            opts_frame, text="📺 Include Resolution", variable=self.inc_res_var
+        ).grid(row=1, column=0, sticky=tk.W, padx=5, pady=3)
 
         self.inc_codec_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(opts_frame, text="🎞️ Include Video Codec", variable=self.inc_codec_var).grid(row=1, column=1, sticky=tk.W, padx=5, pady=3)
+        ttk.Checkbutton(
+            opts_frame, text="🎞️ Include Video Codec", variable=self.inc_codec_var
+        ).grid(row=1, column=1, sticky=tk.W, padx=5, pady=3)
 
         self.inc_audio_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(opts_frame, text="🔊 Include Audio Info", variable=self.inc_audio_var).grid(row=1, column=2, sticky=tk.W, padx=5, pady=3)
+        ttk.Checkbutton(
+            opts_frame, text="🔊 Include Audio Info", variable=self.inc_audio_var
+        ).grid(row=1, column=2, sticky=tk.W, padx=5, pady=3)
 
-        self.inc_lang_var = tk.BooleanVar(value=True)
-        ttk.Checkbutton(opts_frame, text="🌍 Include Audio Language", variable=self.inc_lang_var).grid(row=1, column=3, sticky=tk.W, padx=5, pady=3)
+        self.inc_lang_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(
+            opts_frame, text="🌍 Include Audio Language", variable=self.inc_lang_var
+        ).grid(row=1, column=3, sticky=tk.W, padx=5, pady=3)
+
+        self.archive_source_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(
+            opts_frame, text="📦 Archive Source Files", variable=self.archive_source_var
+        ).grid(row=1, column=4, sticky=tk.W, padx=5, pady=3)
 
     def _build_action_buttons(self):
         btn_frame = ttk.Frame(self)
@@ -117,7 +154,7 @@ class OrganizeTab(ttk.Frame):
             btn_frame,
             text="▶️ Start Processing",
             style="Accent.TButton",
-            command=self.main_app.start_processing
+            command=self.main_app.start_processing,
         )
         self.start_btn.pack(side=tk.LEFT, padx=6)
 
@@ -126,21 +163,19 @@ class OrganizeTab(ttk.Frame):
             text="⏹️ Stop",
             style="Danger.TButton",
             state=tk.DISABLED,
-            command=self.main_app.stop_processing
+            command=self.main_app.stop_processing,
         )
         self.stop_btn.pack(side=tk.LEFT, padx=6)
 
         self.ffmpeg_btn = ttk.Button(
-            btn_frame,
-            text="📥 Install FFmpeg",
-            command=self.main_app.install_ffmpeg
+            btn_frame, text="📥 Install FFmpeg", command=self.main_app.install_ffmpeg
         )
         self.ffmpeg_btn.pack(side=tk.LEFT, padx=6)
 
         self.preview_btn = ttk.Button(
             btn_frame,
             text="👁️ Open Diff Preview",
-            command=lambda: self.main_app.switch_to_tab(1)
+            command=lambda: self.main_app.switch_to_tab(1),
         )
         self.preview_btn.pack(side=tk.LEFT, padx=6)
 
@@ -154,9 +189,7 @@ class OrganizeTab(ttk.Frame):
 
         self.status_var = tk.StringVar(value="✅ Ready to scan files")
         self.status_lbl = ttk.Label(
-            prog_frame,
-            textvariable=self.status_var,
-            font=("Segoe UI", 9, "bold")
+            prog_frame, textvariable=self.status_var, font=("Segoe UI", 9, "bold")
         )
         self.status_lbl.grid(row=1, column=0, sticky=tk.W)
 
@@ -172,7 +205,7 @@ class OrganizeTab(ttk.Frame):
             font=("Consolas", 9),
             bg="#0f172a",
             fg="#f8fafc",
-            insertbackground="#ffffff"
+            insertbackground="#ffffff",
         )
         self.log_text.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
 

@@ -379,7 +379,7 @@ class AnimeFileOrganizer:
                 file_path
             )
 
-        # 6. Execute Rename/Move or Dry Run
+        # ৬. Execute Rename/Move or Dry Run
         target_path = target_folder / new_name
         if self.config.safe_mode and not dry_run:
             target_path = get_unique_destination_path(target_path)
@@ -442,6 +442,47 @@ class AnimeFileOrganizer:
                 self.analytics.record_file(
                     current_name, target_path.name, "success", file_size, parsed_info
                 )
+
+            # ৭. Output ফাইল Archive ফোল্ডারে কপি করা (সবচেয়ে নিরাপদ পদ্ধতি)
+            if self.config.archive_source_files:
+                try:
+                    # Archive ডিরেক্টরি নির্ধারণ
+                    if self.config.archive_path and self.config.archive_path.strip():
+                        archive_dir = Path(self.config.archive_path)
+                    else:
+                        # ডিফল্ট: source_path-এর parent ফোল্ডারে "_Archive_Source"
+                        archive_dir = self.source_path.parent / "_Archive_Source"
+                    
+                    archive_dir.mkdir(parents=True, exist_ok=True)
+                    
+                    # Output ফাইলটি Archive-তে কপি করুন
+                    archive_dest = archive_dir / target_path.name
+                    
+                    # ইউনিক নাম নিশ্চিত করা
+                    if archive_dest.exists():
+                        archive_dest = get_unique_destination_path(archive_dest)
+                    
+                    # Output থেকে Archive-তে কপি (মুভ নয়!)
+                    if safe_exists(target_path):
+                        safe_copy(str(target_path), str(archive_dest))
+                        self.logger.info(f"   📦 Archived to: {archive_dest}")
+                        
+                        # Rollback journal-এ archive অপারেশন রেকর্ড
+                        if self.rollback_mgr and self.session_id:
+                            self.rollback_mgr.log_operation(
+                                self.session_id,
+                                str(target_path),
+                                str(archive_dest),
+                                "archive",
+                                file_hash,
+                            )
+                    else:
+                        self.logger.warning(f"   ⚠️ Output file not found for archiving: {target_path}")
+                        
+                except Exception as e:
+                    # Archive ফেইল করলেও প্রসেসিং সফল হিসেবে গণ্য হবে
+                    self.logger.warning(f"   ⚠️ Archive failed (but file is safe in Output): {e}")
+
             return "success"
 
         except Exception as e:

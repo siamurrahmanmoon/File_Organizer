@@ -100,6 +100,8 @@ class AnimeOrganizerGUI:
         self.config.auto_folder_year = self.organize_tab.auto_folder_year_var.get()
         self.config.process_subfolders = self.organize_tab.subfolders_var.get()
         self.config.flatten_output_structure = self.organize_tab.flatten_output_var.get()
+        self.config.archive_source_files = self.organize_tab.archive_source_var.get()
+        self.config.archive_path = self.organize_tab.archive_selector.get()
         self.config.ask_user_input = self.organize_tab.ask_user_var.get()
 
         # Metadata
@@ -145,6 +147,9 @@ class AnimeOrganizerGUI:
         self.organize_tab.auto_folder_year_var.set(preset.auto_folder_year)
         self.organize_tab.subfolders_var.set(preset.process_subfolders)
         self.organize_tab.flatten_output_var.set(getattr(preset, 'flatten_output_structure', False))
+        self.organize_tab.archive_source_var.set(getattr(preset, 'archive_source_files', False))
+        if getattr(preset, 'archive_path', ''):
+            self.organize_tab.archive_selector.set(preset.archive_path)
         self.organize_tab.ask_user_var.set(preset.ask_user_input)
 
         self.organize_tab.inc_res_var.set(preset.include_resolution)

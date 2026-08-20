@@ -55,7 +55,11 @@ class OrganizerConfig:
     # Core Execution Options
     dry_run: bool = True
     process_subfolders: bool = True
-    flatten_output_structure: bool = False  # True হলে সব ফাইল আউটপুট ফোল্ডারে সরাসরি রাখবে
+    flatten_output_structure: bool = (
+        True  # True হলে সব ফাইল আউটপুট ফোল্ডারে সরাসরি রাখবে
+    )
+    archive_source_files: bool = True  # True হলে প্রসেস হওয়া ফাইল Archive ফোল্ডারে যাবে
+    archive_path: str = ""  # খালি থাকলে source_path-এর পাশে "_Archive_Source" তৈরি হবে
     auto_folder_year: bool = True
     skip_existing_year: bool = True
     ask_user_input: bool = False
