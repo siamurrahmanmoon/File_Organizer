@@ -5,8 +5,6 @@ ui/tabs/duplicate_tab.py - Duplicate Detection Manager & Quarantine Vault.
 import tkinter as tk
 from tkinter import ttk, messagebox
 import os
-from pathlib import Path
-from core.duplicate_detector import DuplicateDetector
 from config import QUARANTINE_DIR
 
 

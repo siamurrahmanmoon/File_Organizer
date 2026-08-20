@@ -5,7 +5,6 @@ ui/tabs/analytics_tab.py - Processing History Analytics & Multi-Format Report Ex
 import tkinter as tk
 from tkinter import ttk, messagebox
 import os
-from pathlib import Path
 from ui.widgets import StatCard
 from config import REPORTS_DIR
 

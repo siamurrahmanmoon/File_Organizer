@@ -2,9 +2,8 @@
 core/profiles_manager.py - Preset Configuration Profiles Manager.
 """
 
-import json
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Optional
 from config import OrganizerConfig, PRESETS_DIR
 
 

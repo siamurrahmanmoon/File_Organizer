@@ -3,7 +3,7 @@ ui/tabs/template_tab.py - Custom Naming Template Builder with Clickable Tags & L
 """
 
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk
 from core.template_engine import TemplateEngine
 from core.parser import SmartMediaParser
 from config import DEFAULT_TEMPLATES

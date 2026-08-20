@@ -53,22 +53,6 @@ def safe_exists(path: Any) -> bool:
         return False
 
 
-def safe_is_file(path: Any) -> bool:
-    """Checks if path is a file with Windows long path support."""
-    try:
-        return os.path.isfile(get_long_path(path))
-    except Exception:
-        return False
-
-
-def safe_is_dir(path: Any) -> bool:
-    """Checks if path is a directory with Windows long path support."""
-    try:
-        return os.path.isdir(get_long_path(path))
-    except Exception:
-        return False
-
-
 def safe_open(path: Any, mode: str = "r", **kwargs):
     """Opens a file with Windows long path support."""
     return open(get_long_path(path), mode, **kwargs)
@@ -116,11 +100,6 @@ def safe_move(src: Any, dst: Any):
         # Fallback to copy + remove for cross-device moves
         shutil.copy2(src_long, dst_long)
         os.remove(src_long)
-
-
-def safe_copy_and_remove(src: Any, dst: Any):
-    """Safely moves a file by copy + verify + remove."""
-    safe_move(src, dst)
 
 
 def safe_delete(path: Any) -> bool:

@@ -4,7 +4,6 @@ core/security.py - Path traversal protection, Windows reserved names & filename 
 
 import re
 import os
-import sys
 from pathlib import Path
 from typing import Tuple
 

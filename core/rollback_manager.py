@@ -3,8 +3,6 @@ core/rollback_manager.py - SQLite Operation Journaling, Checkpointing & 1-Click 
 """
 
 import sqlite3
-import os
-import json
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Any, Optional, Tuple

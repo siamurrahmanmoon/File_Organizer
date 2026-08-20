@@ -2,9 +2,8 @@
 core/subtitle_manager.py - Sidecar Subtitle Detection & Synchronized Organization.
 """
 
-import os
 from pathlib import Path
-from typing import List, Dict, Tuple
+from typing import List, Tuple
 from utils.file_utils import safe_move, safe_copy
 
 DEFAULT_SUB_EXTENSIONS = {".srt", ".ass", ".ssa", ".vtt", ".sub", ".idx"}

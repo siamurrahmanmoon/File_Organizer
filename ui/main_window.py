@@ -5,8 +5,6 @@ ui/main_window.py - Main Application Window Hosting Notebook Tabs & Background T
 import tkinter as tk
 from tkinter import ttk, messagebox
 import threading
-import time
-import os
 import re
 from pathlib import Path
 from typing import Optional, Dict, Any

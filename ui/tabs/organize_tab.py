@@ -3,13 +3,12 @@ ui/tabs/organize_tab.py - Main Organize Tab for folder selection, run controls &
 """
 
 import tkinter as tk
-from tkinter import ttk, messagebox, scrolledtext
+from tkinter import ttk, scrolledtext
 from pathlib import Path
 from datetime import datetime
-from typing import Callable, Dict, Any
 
 from ui.widgets import PathSelector
-from utils.ffmpeg_installer import is_ffmpeg_installed, get_ffprobe_path
+from utils.ffmpeg_installer import is_ffmpeg_installed
 
 
 class OrganizeTab(ttk.Frame):

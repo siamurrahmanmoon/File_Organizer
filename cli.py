@@ -1,6 +1,5 @@
 import argparse
 import sys
-import os
 from pathlib import Path
 
 # Ensure UTF-8 output encoding on Windows terminals
@@ -15,7 +14,7 @@ if sys.platform == "win32":
 from utils.venv_utils import ensure_venv
 ensure_venv()
 
-from config import OrganizerConfig, get_default_config
+from config import get_default_config
 from core.engine import AnimeFileOrganizer
 from core.profiles_manager import ProfilesManager
 from core.rollback_manager import RollbackManager

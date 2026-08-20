@@ -1,5 +1,4 @@
 import sys
-import os
 
 # Ensure UTF-8 output encoding on Windows terminals
 if sys.platform == "win32":
@@ -15,8 +14,6 @@ ensure_venv()
 
 import tkinter as tk
 from ui.main_window import AnimeOrganizerGUI
-from core.engine import AnimeFileOrganizer
-from config import get_default_config
 
 
 def main():

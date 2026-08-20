@@ -5,7 +5,7 @@ core/notifier.py - Desktop Notifications & Discord/Telegram Webhook Integration.
 import json
 import urllib.request
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 logger = logging.getLogger("AnimeOrganizer")
 

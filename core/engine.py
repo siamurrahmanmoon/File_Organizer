@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Optional, Tuple, List, Dict, Any, Callable
 
 from config import OrganizerConfig, get_default_config
-from core.security import SecurityValidator
 from core.parser import SmartMediaParser
 from core.template_engine import TemplateEngine
 from core.duplicate_detector import DuplicateDetector
@@ -26,10 +25,9 @@ from utils.file_utils import (
     get_unique_destination_path,
     safe_file_size,
     safe_exists,
-    get_long_path,
 )
 from utils.metadata_extractor import extract_metadata_ffprobe
-from utils.metadata_parser import get_smart_metadata, format_metadata_tags
+from utils.metadata_parser import get_smart_metadata
 from utils.logger_utils import setup_logger
 
 logger = logging.getLogger("AnimeOrganizer")
@@ -317,9 +315,6 @@ class AnimeFileOrganizer:
                     self.logger.info(f" ⏭️ Skipped {current_name} (No year detected)")
                     self.skipped_count += 1
                     return "skipped"
-        else:
-            # বছর অটো-ডিটেক্ট হয়েছে, ক্যাশে সেভ করার দরকার নেই
-            pass
 
         # 5. Duplicate Detection
         file_size = safe_file_size(file_path)

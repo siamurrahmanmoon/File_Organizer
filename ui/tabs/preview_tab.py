@@ -129,7 +129,6 @@ class PreviewTab(ttk.Frame):
 
         count = 0
         error_count = 0
-        skipped_count = 0
         seen_signatures = set()
         
         # Use os.walk() for better Windows compatibility with long paths

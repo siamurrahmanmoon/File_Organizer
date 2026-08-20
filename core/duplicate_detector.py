@@ -3,11 +3,8 @@ core/duplicate_detector.py - Intelligent Duplicate Detection & Quarantine System
 """
 
 import hashlib
-import os
-import shutil
 from pathlib import Path
-from typing import Dict, Any, List, Optional, Tuple
-from core.parser import SmartMediaParser
+from typing import Dict, Any, List, Optional
 from utils.file_utils import safe_move
 
 
