@@ -1,4 +1,4 @@
-# 📑 Technical Documentation: Smart File Organizer Pro (v4.0 - Enterprise Edition)
+# 📑 Technical Documentation: Smart File Organizer Pro (v4.1 - Enterprise Edition)
 
 This document provides a comprehensive overview of the modular architecture, pipeline logic, configuration system, custom naming templates, and build instructions for **Smart File Organizer Pro**.
 
@@ -80,9 +80,65 @@ ENABLE_ANALYTICS = True               # 11. Statistics tracking & CSV/JSON/HTML 
 ENABLE_SECURITY_VALIDATION = True     # 12. Path traversal & reserved name protection
 ```
 
+### New Configuration Options (v4.1):
+
+```python
+# Output Structure Options
+flatten_output_structure: bool = True   # All files directly in output folder (no subfolders)
+archive_source_files: bool = True       # Backup files to archive folder after processing
+archive_path: str = ""                  # Custom archive path (default: _Archive_Source)
+
+# Cache System
+user_year_cache: Dict[Tuple[str, str], str]  # Cache user year inputs per folder+title
+skip_all_missing_years: bool = False          # Skip all files with missing years
+```
+
 ---
 
-## 3. Custom Naming Template Tokens
+## 3. Processing Pipeline Flow
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                    PROCESSING PIPELINE                       │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  1. Quality Control                                          │
+│     └─ Check file integrity, skip incomplete downloads      │
+│                                                              │
+│  2. Parse & Plan Rename                                      │
+│     ├─ SmartMediaParser.parse_filename()                    │
+│     ├─ Year Detection (filename → folder hierarchy)         │
+│     └─ TemplateEngine.render()                              │
+│                                                              │
+│  3. Filter Engine                                            │
+│     └─ Multi-criteria evaluation (size, res, codec, etc.)   │
+│                                                              │
+│  4. Year Decision Tree (if ask_user_input=True)             │
+│     ├─ Check cache for previous user input                  │
+│     ├─ Show GUI dialog with anime title                     │
+│     └─ Cache user response for same folder+title            │
+│                                                              │
+│  5. Duplicate Detection                                      │
+│     ├─ Hash comparison (MD5/SHA256/fast)                    │
+│     ├─ Content signature matching                           │
+│     └─ Resolution ranking & quarantine                      │
+│                                                              │
+│  6. Execute Move/Copy                                        │
+│     ├─ Create target folder structure                       │
+│     ├─ Move or copy file with safe_mode                     │
+│     ├─ Sync sidecar subtitles                               │
+│     └─ Log to rollback journal                              │
+│                                                              │
+│  7. Archive Backup (if enabled)                              │
+│     ├─ Copy processed file to archive folder                │
+│     └─ Continue even if archive fails                       │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 4. Custom Naming Template Tokens
 
 Templates support conditional bracket tokens and formatting specifiers:
 
@@ -112,7 +168,34 @@ Templates support conditional bracket tokens and formatting specifiers:
 
 ---
 
-## 4. Command-Line Interface (CLI)
+## 5. GUI Features
+
+### Organize Tab
+- **Folder Selection**: Source, Output, Archive directories
+- **Quick Options**: Dry Run, Auto Folder Year, Recursive Subfolders
+- **Flatten Output**: All files directly in output (no subfolders)
+- **Archive Backup**: Copy processed files to archive folder
+- **Live Progress**: Real-time processing status and activity log
+
+### Preview Tab
+- **Diff Table**: Side-by-side Before/After view
+- **Selective Rename**: Check/uncheck individual files
+- **Filter**: Search by filename
+- **Batch Execute**: Apply selected renames
+
+### Template Tab
+- **Interactive Builder**: Drag-and-drop token insertion
+- **Live Preview**: Real-time sample output
+- **Preset Library**: Load/save custom templates
+
+### Year Input Dialog (v4.1)
+- **Anime Title Display**: Shows parsed anime title (not folder name)
+- **Smart Caching**: Remembers user input per folder+title combination
+- **Skip Options**: Skip single, skip all, or enter year
+
+---
+
+## 6. Command-Line Interface (CLI)
 
 The CLI (`cli.py`) supports full automation, profile loading, dry-runs, continuous folder watching, and rollback:
 
@@ -138,16 +221,89 @@ python cli.py --rollback session_20260820_130624
 
 ---
 
-## 5. Building the Standalone Windows Executable (.exe)
+## 7. Building Windows Executable (.exe)
 
-To compile the entire application into a standalone `.exe`:
-
-```bash
-# Activate virtual environment
-.\venv\Scripts\activate
-
-# Build executable with PyInstaller
-pyinstaller --noconfirm --onefile --windowed --name "AnimeOrganizerPro" --icon=icon.ico organizer.py
+### Quick Build (Recommended):
+```batch
+# Double-click setup_and_build.bat
+# This will:
+# 1. Create virtual environment
+# 2. Install all dependencies
+# 3. Build both GUI and CLI executables
 ```
 
-The compiled standalone executable will be located in the **`dist/`** directory.
+### Manual Build:
+```batch
+# Activate virtual environment
+venv\Scripts\activate
+
+# Install PyInstaller
+pip install pyinstaller==6.22.2
+
+# Build GUI version (no console)
+pyinstaller --onefile --windowed --name "AnimeOrganizerPro" --icon=icon.ico organizer.py
+
+# Build CLI version (with console)
+pyinstaller --onefile --console --name "AnimeOrganizerCLI" --icon=icon.ico cli.py
+```
+
+### Output Files:
+```
+dist/
+├── AnimeOrganizerPro.exe   # GUI Version (double-click to run)
+└── AnimeOrganizerCLI.exe   # CLI Version (command line)
+```
+
+### Distribution:
+- **run.bat**: Launch GUI (checks for EXE first, then Python)
+- **run_cli.bat**: Launch CLI (checks for EXE first, then Python)
+- **install.bat**: Install to Program Files with desktop shortcuts
+
+---
+
+## 8. Error Handling & Recovery
+
+### Rollback System
+- **SQLite Journal**: All operations logged with timestamps
+- **One-Click Undo**: Restore original file names and locations
+- **Session Management**: Track multiple processing sessions
+
+### Error Recovery
+- **Safe Mode**: Auto-increment filenames to prevent overwrites
+- **Archive Backup**: Secondary copy survives even if move fails
+- **Quality Control**: Skip corrupted/incomplete files automatically
+
+---
+
+## 9. Performance Optimizations
+
+- **Smart Caching**: User year inputs cached per folder+title
+- **Fast Hash**: Partial file reading (head+middle+tail) for quick duplicate detection
+- **Lazy Metadata**: FFprobe only when needed
+- **Batch Processing**: Process all files before showing summary
+
+---
+
+## 10. Version History
+
+### v4.1 (Latest)
+- ✅ Archive feature with custom path support
+- ✅ Flatten output structure option
+- ✅ Improved year input dialog with anime title display
+- ✅ Smart caching for user year inputs
+- ✅ Better error handling in preview tab
+- ✅ Windows build scripts (build.bat, install.bat)
+
+### v4.0
+- ✅ Enterprise-grade modular architecture
+- ✅ AI-powered pattern recognition
+- ✅ Custom naming templates with tokens
+- ✅ Duplicate detection and quarantine
+- ✅ Rollback journaling and undo
+- ✅ Watch folder automation
+- ✅ Discord/Telegram notifications
+- ✅ CSV/JSON/HTML analytics export
+
+---
+
+*Last Updated: August 20, 2026*
