@@ -17,6 +17,7 @@ dist/
 
 # Application logs
 logs/
+bin/
 
 # Local editor and OS files
 .vscode/
