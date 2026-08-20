@@ -148,8 +148,20 @@ class AnimeFileOrganizer:
             current_name, file_path.parent.name
         )
 
-        # Year determination
-        year_to_use = folder_year or parsed_info.get("Year") or ""
+        # Year determination: fall back to all ancestors when the caller did
+        # not already provide a folder year (for example, in preview mode).
+        hierarchy_year = folder_year
+        if not hierarchy_year and self.config.auto_folder_year:
+            has_year, detected_year, detected_from = self.find_year_in_hierarchy(
+                file_path.parent
+            )
+            if has_year:
+                hierarchy_year = detected_year
+                self.logger.info(
+                    f"🔍 Auto-detected Year '{detected_year}' from: '{detected_from}'"
+                )
+
+        year_to_use = hierarchy_year or parsed_info.get("Year") or ""
 
         # Metadata extraction
         metadata_tags: Dict[str, Any] = {}
