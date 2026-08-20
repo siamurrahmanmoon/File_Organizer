@@ -32,9 +32,19 @@ class AnimeOrganizerGUI:
 
     def __init__(self, root: tk.Tk):
         self.root = root
-        self.root.title("🎬 Smart File Organizer Pro (v4.0 - Enterprise)")
+        self.root.title("🎬 Smart File Organizer Pro (v4.1 - Enterprise)")
         self.root.geometry("1200x920")
         self.root.minsize(950, 700)
+
+        # Set window icon (supports .ico files)
+        icon_path = Path(__file__).parent.parent / "icon.ico"
+        if icon_path.exists():
+            try:
+                self.root.iconbitmap(str(icon_path))
+            except Exception as e:
+                print(f"⚠️ Icon load failed: {e}")
+        else:
+            print("⚠️ icon.ico not found in project root")
 
         # Apply Modern Aesthetic Theme
         ModernTheme.apply_theme(self.root)

@@ -232,21 +232,6 @@ python cli.py --rollback session_20260820_130624
 # 3. Build both GUI and CLI executables
 ```
 
-### Manual Build:
-```batch
-# Activate virtual environment
-venv\Scripts\activate
-
-# Install PyInstaller
-pip install pyinstaller==6.22.2
-
-# Build GUI version (no console)
-pyinstaller --onefile --windowed --name "AnimeOrganizerPro" --icon=icon.ico organizer.py
-
-# Build CLI version (with console)
-pyinstaller --onefile --console --name "AnimeOrganizerCLI" --icon=icon.ico cli.py
-```
-
 ### Output Files:
 ```
 dist/
@@ -254,10 +239,13 @@ dist/
 └── AnimeOrganizerCLI.exe   # CLI Version (command line)
 ```
 
-### Distribution:
-- **run.bat**: Launch GUI (checks for EXE first, then Python)
-- **run_cli.bat**: Launch CLI (checks for EXE first, then Python)
-- **install.bat**: Install to Program Files with desktop shortcuts
+### Distribution Files:
+| File | Description |
+|------|-------------|
+| `run.bat` | Launch GUI (checks for EXE first, then Python) |
+| `run_cli.bat` | Launch CLI (checks for EXE first, then Python) |
+| `setup_and_build.bat` | First-time setup: install deps + build EXEs |
+| `install.bat` | Install to Program Files with desktop shortcuts |
 
 ---
 
@@ -292,7 +280,7 @@ dist/
 - ✅ Improved year input dialog with anime title display
 - ✅ Smart caching for user year inputs
 - ✅ Better error handling in preview tab
-- ✅ Windows build scripts (build.bat, install.bat)
+- ✅ Windows build scripts (setup_and_build.bat, install.bat)
 
 ### v4.0
 - ✅ Enterprise-grade modular architecture

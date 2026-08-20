@@ -42,6 +42,23 @@ def main():
 
     args = parser.parse_args()
 
+    # If no arguments provided, show help
+    if len(sys.argv) == 1:
+        print("=" * 60)
+        print("  🎬 Anime Organizer Pro - CLI Mode")
+        print("=" * 60)
+        print()
+        parser.print_help()
+        print()
+        print("=" * 60)
+        print("  Quick Examples:")
+        print("  • run_cli.bat -s \"R:\\Anime\" -o \"R:\\Organized\"")
+        print("  • run_cli.bat -s \"R:\\Anime\" -o \"R:\\Organized\" --execute")
+        print("  • run_cli.bat --list-profiles")
+        print("=" * 60)
+        input("\nPress Enter to exit...")
+        return
+
     profiles_mgr = ProfilesManager()
     rollback_mgr = RollbackManager()
 
@@ -51,6 +68,7 @@ def main():
         print("📑 Available Configuration Presets:")
         for p in profiles:
             print(f"  • {p}")
+        input("\nPress Enter to exit...")
         return
 
     # 2. List Sessions
@@ -59,6 +77,7 @@ def main():
         print("🔄 Recent Processing Sessions:")
         for s in sessions:
             print(f"  • ID: {s['session_id']} | Start: {s['start_time']} | Processed: {s['processed_files']} | Status: {s['status']}")
+        input("\nPress Enter to exit...")
         return
 
     # 3. Rollback
@@ -70,6 +89,7 @@ def main():
             print(f"❌ Failed to restore {errors} files:")
             for m in msgs:
                 print(f"   - {m}")
+        input("\nPress Enter to exit...")
         return
 
     # Load base config
@@ -77,6 +97,7 @@ def main():
         config = profiles_mgr.load_preset(args.profile)
         if not config:
             print(f"❌ Error: Preset profile '{args.profile}' not found.")
+            input("\nPress Enter to exit...")
             sys.exit(1)
         print(f"📂 Loaded configuration preset: '{args.profile}'")
     else:
@@ -99,6 +120,7 @@ def main():
     if not config.source_path or not config.output_path:
         print("❌ Error: Both --source (-s) and --output (-o) paths must be specified.")
         parser.print_help()
+        input("\nPress Enter to exit...")
         sys.exit(1)
 
     # 4. Watch Folder Mode
@@ -137,6 +159,7 @@ def main():
     print(f"  • Duplicates:      {summary.get('duplicates', 0)}")
     print(f"  • Errors:          {summary.get('errors', 0)}")
     print("=" * 50)
+    input("\nPress Enter to exit...")
 
 
 if __name__ == "__main__":
