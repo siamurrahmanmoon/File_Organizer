@@ -1,16 +1,31 @@
-# 🏗️ Build Guide: Creating Windows Executable
+# 🛠️ Build & Run Guide (Smart File Organizer Pro)
 
-This guide explains how to compile the Python source code into a standalone Windows `.exe` application using PyInstaller.
+## 1. Automatic Virtual Environment (venv) Enforcement
+The application is configured to **always run inside the project's `venv` automatically**:
+- When you run `python organizer.py` or `python cli.py`, [utils/venv_utils.py](file:///r:/filenameedit/utils/venv_utils.py) automatically checks if the script is running inside `venv`. If not, it seamlessly re-launches the process using `venv\Scripts\python.exe`.
+- You can also run the convenience batch scripts:
+  - **`run.bat`**: Double-click or run to launch the GUI inside `venv`.
+  - **`run_cli.bat`**: Run CLI commands directly (e.g. `run_cli.bat --list-profiles`).
 
-##  Prerequisites
+---
 
-- Python 3.8+ installed
-- Virtual environment activated (`venv\Scripts\activate`)
-- All dependencies installed (`pip install -r requirements.txt`)
+## 2. Dependencies Setup
+If you need to re-install packages inside `venv`:
+```cmd
+.\venv\Scripts\pip.exe install -r requirements.txt
+```
 
-## 🚀 Step-by-Step Build Process
+---
 
-### 1. Install PyInstaller
-Open your terminal and install the PyInstaller package:
-```bash
-pip install pyinstaller
+## 3. Building Standalone Windows Executable (.exe)
+
+To bundle everything into a single standalone `.exe` using PyInstaller inside `venv`:
+
+```cmd
+.\venv\Scripts\pyinstaller.exe --noconfirm --onefile --windowed --name "AnimeOrganizerPro" --icon=icon.ico organizer.py
+```
+
+The output standalone executable will be created in the **`dist/`** folder:
+```text
+dist\AnimeOrganizerPro.exe
+```

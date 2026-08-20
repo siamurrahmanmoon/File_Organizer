@@ -1,0 +1,23 @@
+{
+    "dry_run": true,
+    "process_subfolders": true,
+    "auto_folder_year": true,
+    "skip_existing_year": true,
+    "ask_user_input": false,
+    "safe_mode": true,
+    "move_files": true,
+    "enable_metadata": false,
+    "enable_parser": true,
+    "enable_duplicates": false,
+    "enable_filters": false,
+    "enable_templates": true,
+    "enable_rollback": true,
+    "enable_quality_control": false,
+    "enable_subtitles": true,
+    "naming_template": "{Title} ({Year}) - E{Episode}",
+    "include_resolution": false,
+    "include_video_codec": false,
+    "include_audio_codec": false,
+    "include_audio_channels": false,
+    "include_audio_language": false
+}
