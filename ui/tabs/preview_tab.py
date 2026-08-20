@@ -124,30 +124,38 @@ class PreviewTab(ttk.Frame):
         src_path = Path(source_dir)
 
         count = 0
+        error_count = 0
         seen_signatures = set()
         glob_pattern = "**/*" if organizer.config.process_subfolders else "*"
         for p in src_path.glob(glob_pattern):
             if p.is_file() and p.suffix.lower() in organizer.video_extensions:
-                plan = organizer.plan_file_rename(p)
-                info = plan["parsed_info"]
-                signature = DuplicateDetector.get_content_signature(info)
-                is_duplicate = signature in seen_signatures
-                seen_signatures.add(signature)
-                item_data = {
-                    "source_path": p,
-                    "target_name": plan["target_name"],
-                    "status": "⚠️ Duplicate" if is_duplicate else "Ready",
-                    "original": p.name,
-                    "renamed": plan["target_name"],
-                    "year": info.get("Year", "-"),
-                    "resolution": info.get("Resolution", "-"),
-                    "codec": info.get("VideoCodec", "-"),
-                }
-                self.planned_items.append(item_data)
-                count += 1
+                try:
+                    plan = organizer.plan_file_rename(p)
+                    info = plan["parsed_info"]
+                    signature = DuplicateDetector.get_content_signature(info)
+                    is_duplicate = signature in seen_signatures
+                    seen_signatures.add(signature)
+                    item_data = {
+                        "source_path": p,
+                        "target_name": plan["target_name"],
+                        "status": "⚠️ Duplicate" if is_duplicate else "Ready",
+                        "original": p.name,
+                        "renamed": plan["target_name"],
+                        "year": info.get("Year", "-"),
+                        "resolution": info.get("Resolution", "-"),
+                        "codec": info.get("VideoCodec", "-"),
+                    }
+                    self.planned_items.append(item_data)
+                    count += 1
+                except Exception as e:
+                    error_count += 1
+                    self.main_app.organize_tab.append_log(f"⚠️ Preview scan error for {p.name}: {e}", "WARNING")
 
         self._populate_table(self.planned_items)
-        self.count_lbl.config(text=f"{count} files loaded")
+        status_text = f"{count} files loaded"
+        if error_count > 0:
+            status_text += f" ({error_count} errors)"
+        self.count_lbl.config(text=status_text)
 
     def _populate_table(self, items: List[Dict[str, Any]]):
         self.tree.delete(*self.tree.get_children())

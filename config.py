@@ -55,6 +55,7 @@ class OrganizerConfig:
     # Core Execution Options
     dry_run: bool = True
     process_subfolders: bool = True
+    flatten_output_structure: bool = False  # True হলে সব ফাইল আউটপুট ফোল্ডারে সরাসরি রাখবে
     auto_folder_year: bool = True
     skip_existing_year: bool = True
     ask_user_input: bool = False

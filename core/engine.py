@@ -253,62 +253,73 @@ class AnimeFileOrganizer:
                 self.skipped_count += 1
                 return "filtered"
 
-        # 4. Year Decision Tree & User Prompt if Missing
+        # 3. Year Decision Tree & User Prompt if Missing
         if not year_to_use:
             if self.config.ask_user_input:
                 if self.skip_all_missing_years:
                     self.skipped_count += 1
                     return "skipped"
 
-                # ১. পার্স করা টাইটেল বা ফাইলের নাম থেকে বেস টাইটেল নেওয়া
+                #  নতুন এবং শক্তিশালী ক্যাশ কি সিস্টেম
+                # শুধু ফোল্ডার পাথ + নরমালাইজড টাইটেল (প্রথম ৩টি শব্দ)
                 raw_title = str(parsed_info.get("Title", file_path.stem)).strip()
-
-                # ২. টাইটেল নরমালাইজ করা (সব ছোট হাতের অক্ষর, স্পেশাল ক্যারেক্টার রিমুভ)
-                normalized_title = re.sub(r'[^a-z0-9\s]', '', raw_title.lower()).strip()
-
-                # ৩. টাইটেলের প্রথম ৪টি শব্দ নিয়ে একটি ইউনিক সিগনেচার তৈরি করা
-                title_signature = " ".join(normalized_title.split()[:4])
-
-                # ৪. ফাইনাল ক্যাশে কি: (ফোল্ডার পাথ + টাইটেল সিগনেচার)
-                cache_key = (str(file_path.parent.resolve()).casefold(), title_signature)
-
-                # ৫. ডিবাগ লগ: ক্যাশ কি দেখানো
-                self.logger.debug(f"🔑 Cache Key for '{raw_title}': {cache_key}")
+                # সব ছোট হাতের অক্ষর, সংখ্যা ও স্পেশাল ক্যারেক্টার বাদ
+                normalized = re.sub(r'[^a-z\s]', '', raw_title.lower()).strip()
+                # প্রথম ৩টি শব্দ নিন
+                title_words = " ".join(normalized.split()[:3])
+                # ফাইনাল ক্যাশ কি: (ফোল্ডার + টাইটেল_ওয়ার্ডস)
+                cache_key = f"{str(file_path.parent.resolve()).casefold()}|{title_words}"
+                
+                # ডিবাগ লগ
+                self.logger.info(f"🔑 Cache Key: {cache_key}")
+                self.logger.debug(f"   Raw Title: '{raw_title}'")
+                self.logger.debug(f"   Normalized: '{title_words}'")
 
                 year_input = self.user_year_cache.get(cache_key)
+                
                 if year_input:
                     self.logger.info(
                         f" ✅ Using cached year ({year_input}) for "
                         f"{parsed_info.get('Title', file_path.stem)}"
                     )
-                elif self.gui_input_callback:
-                    year_input = self.gui_input_callback(file_path.parent.name)
-                    if year_input and year_input != "skip_all":
-                        # ক্যাশে সেভ করা
-                        self.user_year_cache[cache_key] = year_input
-                        self.logger.debug(f"💾 Cached year {year_input} for key: {cache_key}")
-
-                if year_input == "skip_all":
-                    self.skip_all_missing_years = True
-                    self.skipped_count += 1
-                    return "skipped"
-                elif year_input and self.year_pattern.fullmatch(year_input.strip()):
-                    year_to_use = year_input.strip()
-                    self.user_year_cache[cache_key] = year_to_use
+                    year_to_use = year_input
                     parsed_info["Year"] = year_to_use
                     new_name = TemplateEngine.render(
                         self.config.naming_template,
                         parsed_info,
                         extension=file_path.suffix,
                     )
+                elif self.gui_input_callback:
+                    # ইউজারকে জিজ্ঞেস করা - Anime Title পাঠাও
+                    anime_title = parsed_info.get("Title", file_path.stem)
+                    year_input = self.gui_input_callback(anime_title)
+                    
+                    if year_input == "skip_all":
+                        self.skip_all_missing_years = True
+                        self.skipped_count += 1
+                        return "skipped"
+                    elif year_input and self.year_pattern.fullmatch(year_input.strip()):
+                        year_to_use = year_input.strip()
+                        # ক্যাশে সেভ করা
+                        self.user_year_cache[cache_key] = year_to_use
+                        self.logger.info(f"💾 Cached year {year_to_use} for: {cache_key}")
+                        parsed_info["Year"] = year_to_use
+                        new_name = TemplateEngine.render(
+                            self.config.naming_template,
+                            parsed_info,
+                            extension=file_path.suffix,
+                        )
+                    else:
+                        self.logger.info(f" ⏭️ Skipped {current_name} (No valid year provided)")
+                        self.skipped_count += 1
+                        return "skipped"
                 else:
-                    self.logger.info(f"   ⏭️ Skipped {current_name} (No year provided)")
+                    self.logger.info(f" ⏭️ Skipped {current_name} (No year detected)")
                     self.skipped_count += 1
                     return "skipped"
-            else:
-                self.logger.info(f"   ⏭️ Skipped {current_name} (No year detected)")
-                self.skipped_count += 1
-                return "skipped"
+        else:
+            # বছর অটো-ডিটেক্ট হয়েছে, ক্যাশে সেভ করার দরকার নেই
+            pass
 
         # 5. Duplicate Detection
         file_size = safe_file_size(file_path)
@@ -489,12 +500,17 @@ class AnimeFileOrganizer:
                     folder_path
                 )
 
-            rel_path = (
-                folder_path.relative_to(self.source_path)
-                if self.config.process_subfolders
-                else Path(folder_path.name)
-            )
-            target_folder = self.output_path / rel_path
+            if self.config.flatten_output_structure:
+                # সব ফাইল সরাসরি আউটপুট ফোল্ডারে রাখবে
+                target_folder = self.output_path
+            else:
+                # সাবফোল্ডার স্ট্রাকচার মেইনটেইন করবে
+                rel_path = (
+                    folder_path.relative_to(self.source_path)
+                    if self.config.process_subfolders
+                    else Path(folder_path.name)
+                )
+                target_folder = self.output_path / rel_path
 
             self.process_file(file_path, target_folder, folder_year, dry_run=dry_run)
 

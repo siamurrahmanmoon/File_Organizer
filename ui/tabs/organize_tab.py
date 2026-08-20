@@ -93,6 +93,9 @@ class OrganizeTab(ttk.Frame):
         self.ask_user_var = tk.BooleanVar(value=False)
         ttk.Checkbutton(opts_frame, text="❓ Ask if Missing Year", variable=self.ask_user_var).grid(row=0, column=3, sticky=tk.W, padx=5, pady=3)
 
+        self.flatten_output_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(opts_frame, text="📁 Flatten Output (No Subfolders)", variable=self.flatten_output_var).grid(row=0, column=4, sticky=tk.W, padx=5, pady=3)
+
         # Metadata row
         self.inc_res_var = tk.BooleanVar(value=True)
         ttk.Checkbutton(opts_frame, text="📺 Include Resolution", variable=self.inc_res_var).grid(row=1, column=0, sticky=tk.W, padx=5, pady=3)

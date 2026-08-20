@@ -99,6 +99,7 @@ class AnimeOrganizerGUI:
         self.config.dry_run = self.organize_tab.dry_run_var.get()
         self.config.auto_folder_year = self.organize_tab.auto_folder_year_var.get()
         self.config.process_subfolders = self.organize_tab.subfolders_var.get()
+        self.config.flatten_output_structure = self.organize_tab.flatten_output_var.get()
         self.config.ask_user_input = self.organize_tab.ask_user_var.get()
 
         # Metadata
@@ -143,6 +144,7 @@ class AnimeOrganizerGUI:
         self.organize_tab.dry_run_var.set(preset.dry_run)
         self.organize_tab.auto_folder_year_var.set(preset.auto_folder_year)
         self.organize_tab.subfolders_var.set(preset.process_subfolders)
+        self.organize_tab.flatten_output_var.set(getattr(preset, 'flatten_output_structure', False))
         self.organize_tab.ask_user_var.set(preset.ask_user_input)
 
         self.organize_tab.inc_res_var.set(preset.include_resolution)
@@ -310,25 +312,34 @@ class AnimeOrganizerGUI:
             self.organize_tab.append_log(f"❌ FFmpeg installation failed: {error}", "ERROR")
             messagebox.showerror("Error", f"Failed to install FFmpeg:\n{error}")
 
-    def get_user_input_year_gui(self, folder_name: str) -> Optional[str]:
-        """Thread-safe dialog asking for release year."""
+    def get_user_input_year_gui(self, anime_title: str) -> Optional[str]:
+        """Thread-safe dialog asking for release year with anime title display."""
         result = {"year": None, "event": threading.Event()}
 
         def show_dialog():
             try:
                 dialog = tk.Toplevel(self.root)
-                dialog.title("Enter Release Year")
-                dialog.geometry("450x180")
+                dialog.title("🎬 Enter Release Year")
+                dialog.geometry("550x200")
                 dialog.transient(self.root)
                 dialog.grab_set()
                 dialog.attributes("-topmost", True)
 
-                ttk.Label(dialog, text=f"Folder: {folder_name[:70]}...", wraplength=400).pack(pady=10, padx=10)
+                # Anime Title Label
+                ttk.Label(dialog, text="Anime Title:", font=("Segoe UI", 9, "bold")).pack(pady=(15, 5))
+
+                title_text = tk.Text(dialog, wrap=tk.WORD, height=2, font=("Segoe UI", 10),
+                                    bg="#f0f0f0", relief="flat", padx=10, pady=5)
+                title_text.insert("1.0", anime_title)
+                title_text.config(state="disabled")
+                title_text.pack(pady=5, padx=10, fill=tk.X)
+
+                # Year Entry
+                year_frame = ttk.Frame(dialog)
+                year_frame.pack(pady=10)
+                ttk.Label(year_frame, text="Enter Year: ", font=("Segoe UI", 10, "bold")).pack(side=tk.LEFT)
 
                 year_var = tk.StringVar()
-                year_frame = ttk.Frame(dialog)
-                year_frame.pack(pady=5)
-                ttk.Label(year_frame, text="Enter Year: ", font=("Segoe UI", 9, "bold")).pack(side=tk.LEFT)
                 year_entry = ttk.Entry(year_frame, textvariable=year_var, width=12, font=("Segoe UI", 11))
                 year_entry.pack(side=tk.LEFT, padx=5)
                 year_entry.focus()
@@ -348,6 +359,9 @@ class AnimeOrganizerGUI:
                 def on_skip_all():
                     result["year"] = "skip_all"
                     dialog.destroy()
+
+                # Bind Enter key
+                year_entry.bind("<Return>", lambda e: on_submit())
 
                 btn_f = ttk.Frame(dialog)
                 btn_f.pack(pady=10)
